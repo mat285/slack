@@ -87,7 +87,7 @@ func (s *Server) handleAsync(scr *slack.SlashCommandRequest, handler HandleFunc)
 		return
 	}
 	if message != nil {
-		err := slack.Notify(scr.ResponseURL, message)
+		err = slack.Notify(scr.ResponseURL, message)
 		if err != nil {
 			s.App.Logger().Error(err)
 		}
