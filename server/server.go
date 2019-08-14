@@ -6,15 +6,15 @@ import (
 	"github.com/mat285/slack/slack"
 )
 
-// HandleFunc is handles the requests
-type HandleFunc func(*slack.SlashCommandRequest) (*slack.Message, error)
+// Handler is a handler for the requests
+type Handler func(*slack.SlashCommandRequest) (*slack.Message, error)
 
 // Server is a slack server
 type Server struct {
-	App        *web.App
-	Config     *Config
-	Slack      *slack.Slack
-	HandleFunc HandleFunc
+	App     *web.App
+	Config  *Config
+	Slack   *slack.Slack
+	Handler Handler
 }
 
 // New returns a new slack server
@@ -26,9 +26,9 @@ func New(config *Config) *Server {
 	return s
 }
 
-// WithHandleFunc sets the handle func on the server
-func (s *Server) WithHandleFunc(f HandleFunc) *Server {
-	s.HandleFunc = f
+// WithHandler sets the handler on the server
+func (s *Server) WithHandler(f Handler) *Server {
+	s.Handler = f
 	return s
 }
 
@@ -56,9 +56,9 @@ func (s *Server) handle(r *web.Ctx) web.Result {
 		return r.JSON().NotAuthorized()
 	}
 
-	handler := s.HandleFunc
+	handler := s.Handler
 	if handler == nil {
-		handler = s.defaultHandleFunc
+		handler = s.defaultHandler
 	}
 
 	if s.Config.AcknowledgeOnVerify {
@@ -68,7 +68,8 @@ func (s *Server) handle(r *web.Ctx) web.Result {
 
 	responseMessage, responseError := handler(scr)
 	if responseError != nil {
-		return r.JSON().InternalError(responseError)
+		s.App.Logger().Error(err)
+		return r.JSON().Result(s.errorMessage())
 	}
 	if responseMessage != nil {
 		return r.JSON().Result(responseMessage)
@@ -76,7 +77,7 @@ func (s *Server) handle(r *web.Ctx) web.Result {
 	return r.JSON().OK()
 }
 
-func (s *Server) handleAsync(scr *slack.SlashCommandRequest, handler HandleFunc) {
+func (s *Server) handleAsync(scr *slack.SlashCommandRequest, handler Handler) {
 	message, err := handler(scr)
 	if err != nil {
 		s.App.Logger().Error(err)
@@ -95,7 +96,7 @@ func (s *Server) handleAsync(scr *slack.SlashCommandRequest, handler HandleFunc)
 	}
 }
 
-func (s *Server) defaultHandleFunc(_ *slack.SlashCommandRequest) (*slack.Message, error) {
+func (s *Server) defaultHandler(_ *slack.SlashCommandRequest) (*slack.Message, error) {
 	return nil, nil
 }
 
