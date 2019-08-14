@@ -4,8 +4,7 @@ Slack
 Slack is a simple golang package for handling some common slack things like verifying requests from slash commands
 
 
-Server
-============
+## Server
 
 The server package abstracts running a slack slash command server. The server is configured like any web server from [here](https://github.com/blend/go-sdk/web), but with the addition of a `SlackSignatureSecret`. The server handles verifying and parsing requests from slack into a stuct giving you the ability to start s slash command sever with only needing to write the handler. 
 
