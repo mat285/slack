@@ -19,9 +19,7 @@ type Server struct {
 
 // New returns a new slack server
 func New(config *Config) *Server {
-	app := web.NewFromConfig(&config.Config)
 	s := &Server{
-		App:    app,
 		Config: config,
 		Slack:  slack.New([]byte(config.SlackSignatureSecret)),
 	}
@@ -34,11 +32,22 @@ func (s *Server) WithHandleFunc(f HandleFunc) *Server {
 	return s
 }
 
+// WithConfig sets the config on the server
+func (s *Server) WithConfig(config *Config) *Server {
+	s.Config = config
+	return s
+}
+
 // Start gracefully starts the server starts the server and blocks until it exits
 func (s *Server) Start() error {
+	s.createApp()
+	return graceful.Shutdown(s.App)
+}
+
+func (s *Server) createApp() {
+	s.App = web.NewFromConfig(&s.Config.Config)
 	s.App.POST("/", s.handle)
 	s.App.GET("/healthz", s.healthz)
-	return graceful.Shutdown(s.App)
 }
 
 func (s *Server) handle(r *web.Ctx) web.Result {
