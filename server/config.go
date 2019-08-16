@@ -6,9 +6,9 @@ import (
 
 // Config is the config for a slack server
 type Config struct {
-	web.Config           `json:",inline"`
-	SlackSignatureSecret string `json:"slackSignatureSecret"`
-	AcknowledgeOnVerify  bool   `json:"acknowledgeOnVerify"`
+	web.Config           `json:",inline" yaml:",inline"`
+	SlackSignatureSecret string `json:"slackSignatureSecret" yaml:"slackSignatureSecret"`
+	AcknowledgeOnVerify  bool   `json:"acknowledgeOnVerify" yaml:"acknowledgeOnVerify"`
 }
 
 // Status is the status of the server
