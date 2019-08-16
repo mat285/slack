@@ -63,7 +63,7 @@ func (s *Server) handle(r *web.Ctx) web.Result {
 
 	if s.Config.AcknowledgeOnVerify {
 		go s.handleAsync(scr, handler)
-		return r.JSON().OK()
+		return r.JSON().Result(s.acknowledgeMessage())
 	}
 
 	responseMessage, responseError := handler(scr)
@@ -74,7 +74,7 @@ func (s *Server) handle(r *web.Ctx) web.Result {
 	if responseMessage != nil {
 		return r.JSON().Result(responseMessage)
 	}
-	return r.JSON().OK()
+	return r.JSON().Result(s.acknowledgeMessage())
 }
 
 func (s *Server) handleAsync(scr *slack.SlashCommandRequest, handler Handler) {
@@ -104,6 +104,13 @@ func (s *Server) errorMessage() *slack.Message {
 	return &slack.Message{
 		ResponseType: slack.ResponseTypeEphemeral,
 		Text:         "Oops! Something went wrong with processing your request, please try again",
+	}
+}
+
+func (s *Server) acknowledgeMessage() *slack.Message {
+	return &slack.Message{
+		ResponseType: slack.ResponseTypeEphemeral,
+		Text:         "Ok!",
 	}
 }
 
